@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Net.Mqtt;
 using System.Text;
 using System.Threading.Tasks;
@@ -16,7 +17,7 @@ namespace TicTacToe.Client
 
     public class Board
     {
-        static readonly string host = "192.168.0.34";
+        static readonly string host = "192.168.0.41";
         static readonly int port = 55555;
         static readonly string topic = "tictactoe/game";
         static readonly Lazy<Board> instance;
@@ -149,8 +150,9 @@ namespace TicTacToe.Client
                     .SubscribeAsync(topic, MqttQualityOfService.AtLeastOnce)
                     .ConfigureAwait(continueOnCapturedContext: false);
             }
-            catch
+            catch (Exception ex)
             {
+                var message = ex.Message;
                 //TODO: Handle exception
             }
         }
