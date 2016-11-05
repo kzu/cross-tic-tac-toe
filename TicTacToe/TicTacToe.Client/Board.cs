@@ -5,23 +5,23 @@ using System.Net.Mqtt;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace TicTacToe.Library
+namespace TicTacToe.Client
 {
-    public enum Shape
+    public struct Shape
     {
-        Empty,
-        Nought,
-        Cross,
+        public static readonly string Empty = "";
+        public static readonly string Nought = "O";
+        public static readonly string Cross = "X";
     }
 
     public class Board
     {
-        static readonly string host = "192.168.0.200";
+        static readonly string host = "192.168.0.34";
         static readonly int port = 55555;
         static readonly string topic = "tictactoe/game";
         static readonly Lazy<Board> instance;
 
-        readonly IList<Tuple<int, int, Shape>> items;
+        readonly IList<Tuple<int, int, string>> items;
         string clientId;
         IMqttClient client;
 
@@ -32,7 +32,7 @@ namespace TicTacToe.Library
 
         private Board()
         {
-            items = new List<Tuple<int, int, Shape>>();
+            items = new List<Tuple<int, int, string>>();
 
             InitializeAsync().Wait();
         }
@@ -43,6 +43,11 @@ namespace TicTacToe.Library
 
         public async Task PlayAsync(int coordinateX, int coordinateY)
         {
+            if (client == null || !client.IsConnected)
+            {
+                return;
+            }
+
             if (items.Any(i => i.Item1 == coordinateX && i.Item2 == coordinateY && i.Item3 != Shape.Empty))
             {
                 return;
@@ -61,7 +66,7 @@ namespace TicTacToe.Library
                 .ConfigureAwait(continueOnCapturedContext: false);
         }
 
-        public Shape GetValue(int coordinateX, int coordinateY)
+        public string GetValue(int coordinateX, int coordinateY)
         {
             var item = items
                 .FirstOrDefault(i => i.Item1 == coordinateX && i.Item2 == coordinateX);
@@ -98,13 +103,13 @@ namespace TicTacToe.Library
                 var values = line.Split(new string[] { ":" }, StringSplitOptions.None);
                 var coordinateX = default(int);
                 var coordinateY = default(int);
-                var shape = default(Shape);
 
                 if (int.TryParse(values[0], out coordinateX) &&
-                    int.TryParse(values[1], out coordinateY) &&
-                    Enum.TryParse(values[2], out shape))
+                    int.TryParse(values[1], out coordinateY))
                 {
-                    items.Add(Tuple.Create(coordinateX, coordinateY, shape));
+                    var shape = values[2];
+
+                    items.Add(Tuple.Create(coordinateX, coordinateY, shape ?? string.Empty));
                 }
             }
 
@@ -113,38 +118,45 @@ namespace TicTacToe.Library
 
         async Task InitializeAsync()
         {
-            var config = new MqttConfiguration
+            try
             {
-                Port = port,
-                MaximumQualityOfService = MqttQualityOfService.AtLeastOnce,
-                AllowWildcardsInTopicFilters = true,
-                WaitTimeoutSecs = 10,
-                KeepAliveSecs = 15
-            };
+                var config = new MqttConfiguration
+                {
+                    Port = port,
+                    MaximumQualityOfService = MqttQualityOfService.AtLeastOnce,
+                    AllowWildcardsInTopicFilters = true,
+                    WaitTimeoutSecs = 10,
+                    KeepAliveSecs = 15
+                };
 
-            clientId = GetClientId();
-            client = await MqttClient
-                .CreateAsync(host, config)
-                .ConfigureAwait(continueOnCapturedContext: false);
+                clientId = GetClientId();
+                client = await MqttClient
+                    .CreateAsync(host, config)
+                    .ConfigureAwait(continueOnCapturedContext: false);
 
-            await client
-                .ConnectAsync(new MqttClientCredentials(clientId))
-                .ConfigureAwait(continueOnCapturedContext: false);
+                await client
+                    .ConnectAsync(new MqttClientCredentials(clientId))
+                    .ConfigureAwait(continueOnCapturedContext: false);
 
-            client.MessageStream.Subscribe(message =>
+                client.MessageStream.Subscribe(message =>
+                {
+                    var serializedBoard = Encoding.UTF8.GetString(message.Payload);
+
+                    Reload(serializedBoard);
+                });
+
+                await client
+                    .SubscribeAsync(topic, MqttQualityOfService.AtLeastOnce)
+                    .ConfigureAwait(continueOnCapturedContext: false);
+            }
+            catch
             {
-                var serializedBoard = Encoding.UTF8.GetString(message.Payload);
-
-                Reload(serializedBoard);
-            });
-
-            await client
-                .SubscribeAsync(topic, MqttQualityOfService.AtLeastOnce)
-                .ConfigureAwait(continueOnCapturedContext: false);
+                //TODO: Handle exception
+            }
         }
 
         string GetClientId() => Guid.NewGuid().ToString().Split(new string[] { "-" }, StringSplitOptions.None).First();
 
-        Shape GetShape() => items.Count % 2 == 0 ? Shape.Nought : Shape.Cross;
+        string GetShape() => items.Count % 2 == 0 ? Shape.Nought : Shape.Cross;
     }
 }
