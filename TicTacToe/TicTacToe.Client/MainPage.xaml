@@ -1,0 +1,27 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:TicTacToe.Client"
+             x:Class="TicTacToe.Client.MainPage">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="1*" />
+            <RowDefinition Height="1*" />
+            <RowDefinition Height="1*" />
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="1*" />
+            <ColumnDefinition Width="1*" />
+            <ColumnDefinition Width="1*" />
+        </Grid.ColumnDefinitions>
+        <Button x:Name="btnRow1Column1" BorderColor="Black" BorderWidth="3" FontSize="Large" FontAttributes="Bold"></Button>
+        <Button x:Name="btnRow1Column2" Grid.Column="1" BorderColor="Black" BorderWidth="3" FontSize="Large" FontAttributes="Bold"></Button>
+        <Button x:Name="btnRow1Column3" Grid.Column="2" BorderColor="Black" BorderWidth="3" FontSize="Large" FontAttributes="Bold"></Button>
+        <Button x:Name="btnRow2Column1" Grid.Row="1" BorderColor="Black" BorderWidth="3" FontSize="Large" FontAttributes="Bold"></Button>
+        <Button x:Name="btnRow2Column2" Grid.Row="1" Grid.Column="1" BorderColor="Black" BorderWidth="3" FontSize="Large" FontAttributes="Bold"></Button>
+        <Button x:Name="btnRow2Column3" Grid.Row="1" Grid.Column="2" BorderColor="Black" BorderWidth="3" FontSize="Large" FontAttributes="Bold"></Button>
+        <Button x:Name="btnRow3Column1" Grid.Row="2" BorderColor="Black" BorderWidth="3" FontSize="Large" FontAttributes="Bold"></Button>
+        <Button x:Name="btnRow3Column2" Grid.Row="2" Grid.Column="1" BorderColor="Black" BorderWidth="3" FontSize="Large" FontAttributes="Bold"></Button>
+        <Button x:Name="btnRow3Column3" Grid.Row="2" Grid.Column="2" BorderColor="Black" BorderWidth="3" FontSize="Large" FontAttributes="Bold"></Button>
+    </Grid>
+</ContentPage>
