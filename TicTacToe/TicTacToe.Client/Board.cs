@@ -17,7 +17,7 @@ namespace TicTacToe.Client
 
     public class Board
     {
-        static readonly string host = "192.168.0.109";
+        static readonly string host = "192.168.1.120";
         static readonly int port = 55555;
         static readonly string topic = "tictactoe/game";
         static readonly Lazy<Board> instance;
@@ -34,9 +34,13 @@ namespace TicTacToe.Client
         private Board()
         {
             items = new List<Tuple<int, int, string>>();
+
+            InitializeAsync().Wait();
         }
 
         public event EventHandler Reloaded;
+
+        public event EventHandler GameCompleted;
 
         public static Board Default => instance.Value;
 
@@ -44,8 +48,7 @@ namespace TicTacToe.Client
         {
             if (client == null || !client.IsConnected)
             {
-                await InitializeAsync()
-                    .ConfigureAwait(continueOnCapturedContext: false);
+                return;
             }
 
             if (items.Any(i => i.Item1 == coordinateX && i.Item2 == coordinateY && i.Item3 != Shape.Empty))
@@ -113,7 +116,14 @@ namespace TicTacToe.Client
                 }
             }
 
-            Reloaded?.Invoke(this, EventArgs.Empty);
+            if (items.Count == 9)
+            {
+                GameCompleted?.Invoke(this, EventArgs.Empty);
+            }
+            else
+            {
+                Reloaded?.Invoke(this, EventArgs.Empty);
+            }
         }
 
         async Task InitializeAsync()

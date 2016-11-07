@@ -1,6 +1,8 @@
 ﻿using System.Diagnostics;
 using System.Net.Mqtt;
+using System.Text;
 using System.Threading;
+using System;
 
 namespace TicTacToe.Server.IoT
 {
@@ -34,6 +36,17 @@ namespace TicTacToe.Server.IoT
             server.ClientDisconnected += (sender, e) => Debug.WriteLine($"Player disconnected: {e}");
 
             server.Start();
+
+            var client = server.CreateClientAsync().Result;
+
+            client.MessageStream.Subscribe(message =>
+            {
+                var text = Encoding.UTF8.GetString(message.Payload);
+
+                Debug.WriteLine(string.Format("New message received to topic {0}: {1}", message.Topic, text));
+            });
+
+            client.SubscribeAsync("#", MqttQualityOfService.AtLeastOnce);
 
             Debug.WriteLine("Server started...");
             Debug.WriteLine("Listening for new players...");
