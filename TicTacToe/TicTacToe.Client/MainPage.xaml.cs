@@ -10,6 +10,7 @@ namespace TicTacToe.Client
 			this.InitializeComponent();
 
             Board.Default.Reloaded += OnBoardReloaded;
+            Board.Default.GameCompleted += OnGameCompleted;
 
             btnRow1Column1.Clicked += async (sender, e) =>
             {
@@ -91,6 +92,30 @@ namespace TicTacToe.Client
                     btnRow3Column1.Text = Board.Default.GetValue(coordinateX: 3, coordinateY: 1);
                     btnRow3Column2.Text = Board.Default.GetValue(coordinateX: 3, coordinateY: 2);
                     btnRow3Column3.Text = Board.Default.GetValue(coordinateX: 3, coordinateY: 3);
+                });
+            }
+            catch (Exception ex)
+            {
+                var message = ex.Message;
+                //TODO: Handle exception
+            }
+        }
+
+        void OnBoardReloaded(object sender, EventArgs e)
+        {
+            try
+            {
+                Device.BeginInvokeOnMainThread(() =>
+                {
+                    btnRow1Column1.Text = string.Empty;
+                    btnRow1Column2.Text = string.Empty;
+                    btnRow1Column3.Text = string.Empty;
+                    btnRow2Column1.Text = string.Empty;
+                    btnRow2Column2.Text = string.Empty;
+                    btnRow2Column3.Text = string.Empty;
+                    btnRow3Column1.Text = string.Empty;
+                    btnRow3Column2.Text = string.Empty;
+                    btnRow3Column3.Text = string.Empty;
                 });
             }
             catch (Exception ex)
