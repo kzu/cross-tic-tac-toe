@@ -17,7 +17,7 @@ namespace TicTacToe.Client
 
     public class Board
     {
-        static readonly string host = "192.168.0.41";
+        static readonly string host = "192.168.0.109";
         static readonly int port = 55555;
         static readonly string topic = "tictactoe/game";
         static readonly Lazy<Board> instance;
@@ -34,8 +34,6 @@ namespace TicTacToe.Client
         private Board()
         {
             items = new List<Tuple<int, int, string>>();
-
-            InitializeAsync().Wait();
         }
 
         public event EventHandler Reloaded;
@@ -46,7 +44,8 @@ namespace TicTacToe.Client
         {
             if (client == null || !client.IsConnected)
             {
-                return;
+                await InitializeAsync()
+                    .ConfigureAwait(continueOnCapturedContext: false);
             }
 
             if (items.Any(i => i.Item1 == coordinateX && i.Item2 == coordinateY && i.Item3 != Shape.Empty))
@@ -70,7 +69,7 @@ namespace TicTacToe.Client
         public string GetValue(int coordinateX, int coordinateY)
         {
             var item = items
-                .FirstOrDefault(i => i.Item1 == coordinateX && i.Item2 == coordinateX);
+                .FirstOrDefault(i => i.Item1 == coordinateX && i.Item2 == coordinateY);
 
             return item == null ? Shape.Empty : item.Item3;
         }
